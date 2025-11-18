@@ -4,7 +4,7 @@ from TTS.api import TTS
 # Load lightweight CPU-friendly TTS model
 tts = TTS("tts_models/en/ljspeech/tacotron2-DDC")  # CPU compatible
 
-# For UI, dropdown (single speaker model only, so voice ignored)
+# Dropdown UI voices (single speaker model, just for UI)
 voices = {
     "Female": None,
     "Male": None
@@ -26,7 +26,7 @@ app = gr.Interface(
         gr.Textbox(lines=4, placeholder="Enter your text here...", label="Enter Text"),
         gr.Dropdown(list(voices.keys()), label="Choose Voice")
     ],
-    outputs=gr.Audio(type="file", label="Generated Audio"),
+    outputs=gr.Audio(type="filepath", label="Generated Audio"),  # <-- fixed
     title="Unlimited Voiceover Tool",
     description="Enter text and get audio output. Play and download the audio easily."
 )
