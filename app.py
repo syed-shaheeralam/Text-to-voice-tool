@@ -1,21 +1,25 @@
 import gradio as gr
+import os
 from TTS.api import TTS
 
-# Load lightweight CPU-friendly TTS model
-tts = TTS("tts_models/en/ljspeech/tacotron2-DDC")  # CPU compatible
+# Load lightweight multi-speaker CPU-friendly model
+tts = TTS(model_name="tts_models/en/vctk/vits", progress_bar=False, gpu=False)
 
-# Dropdown UI voices (single speaker model, just for UI)
+# Voices available in model
 voices = {
-    "Female": None,
-    "Male": None
+    "Female": "p273",
+    "Male": "p225",
+    "Kid": "p274",
+    "Old": "p226",
+    "Cinematic": "p272"
 }
 
 def tts_generate(text, voice):
     try:
         if not text.strip():
             return "Error: Please enter some text."
-        filename = "output.wav"
-        tts.tts_to_file(text=text, file_path=filename)
+        filename = os.path.join(os.getcwd(), "output.wav")
+        tts.tts_to_file(text=text, speaker=voices[voice], file_path=filename)
         return filename
     except Exception as e:
         return f"Error: {e}"
@@ -23,12 +27,12 @@ def tts_generate(text, voice):
 app = gr.Interface(
     fn=tts_generate,
     inputs=[
-        gr.Textbox(lines=4, placeholder="Enter your text here...", label="Enter Text"),
+        gr.Textbox(lines=4, placeholder="Type your text here...", label="Enter Text"),
         gr.Dropdown(list(voices.keys()), label="Choose Voice")
     ],
-    outputs=gr.Audio(type="filepath", label="Generated Audio"),  # <-- fixed
+    outputs=gr.Audio(type="filepath", label="Generated Audio"),
     title="Unlimited Voiceover Tool",
-    description="Enter text and get audio output. Play and download the audio easily."
+    description="Enter text and get audio output. Play and download. Multiple voices supported."
 )
 
 app.launch()
