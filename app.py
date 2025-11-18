@@ -11,10 +11,14 @@ voices = {
 }
 
 def tts_generate(text, voice):
-    audio = generate_audio(text, history_prompt=voice)
-    filename = "output.wav"
-    wav.write(filename, SAMPLE_RATE, audio)
-    return filename
+    try:
+        speaker = voices[voice]  # map dropdown choice to actual model speaker
+        audio = generate_audio(text, history_prompt=speaker)
+        filename = "output.wav"
+        wav.write(filename, SAMPLE_RATE, audio)
+        return filename
+    except Exception as e:
+        return f"Error: {e}"  # show error instead of crashing
 
 app = gr.Interface(
     fn=tts_generate,
