@@ -1,5 +1,5 @@
 gradio
-bark
-scipy
-numpy
+TTS
 torch
+numpy
+scipy
