@@ -5,3 +5,5 @@ gradio
 ffmpeg-python
 soundfile
 numpy
+librosa
+numba
