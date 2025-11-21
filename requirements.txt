@@ -1,6 +1,6 @@
 TTS
 gradio
 torch
+soundfile
 transformers
 datasets
-soundfile
