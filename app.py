@@ -1,7 +1,7 @@
 import gradio as gr
 from TTS.api import TTS
 
-# Load TTS model once (CPU for Hugging Face Spaces)
+# Load TTS model
 tts = TTS(model_name="tts_models/en/ljspeech/tacotron2-DDC", progress_bar=False, gpu=False)
 
 def generate_voice(text):
@@ -12,7 +12,7 @@ def generate_voice(text):
 iface = gr.Interface(
     fn=generate_voice,
     inputs=gr.Textbox(lines=3, placeholder="Type your text here..."),
-    outputs=gr.Audio(type="file")
+    outputs=gr.Audio(type="filepath")   # ← FIXED
 )
 
 iface.launch()
