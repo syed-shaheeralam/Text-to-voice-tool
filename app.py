@@ -1,37 +1,18 @@
 import gradio as gr
-from bark import SAMPLE_RATE, generate_audio
-import scipy.io.wavfile as wav
-import os
+from TTS.api import TTS
 
-# Predefined Bark speaker voices
-voices = {
-    "Female": "v2/en_speaker_6",
-    "Male": "v2/en_speaker_1",
-    "Old Man": "v2/en_speaker_9",
-    "Kid": "v2/en_speaker_5",
-    "Cinematic": "v2/en_speaker_8"
-}
+# Load TTS model once (CPU for Hugging Face Spaces)
+tts = TTS(model_name="tts_models/en/ljspeech/tacotron2-DDC", progress_bar=False, gpu=False)
 
-def tts_generate(text, voice):
-    try:
-        if not text.strip():
-            return "Error: Please enter some text."
-        audio = generate_audio(text, history_prompt=voices[voice])
-        filename = os.path.join(os.getcwd(), "output.wav")
-        wav.write(filename, SAMPLE_RATE, audio)
-        return filename
-    except Exception as e:
-        return f"Error: {e}"
+def generate_voice(text):
+    out_file = "output.wav"
+    tts.tts_to_file(text=text, file_path=out_file)
+    return out_file
 
-app = gr.Interface(
-    fn=tts_generate,
-    inputs=[
-        gr.Textbox(lines=4, placeholder="Type text here...", label="Enter Text"),
-        gr.Dropdown(list(voices.keys()), label="Choose Voice")
-    ],
-    outputs=gr.Audio(type="filepath", label="Generated Audio"),
-    title="Unlimited Voiceover Tool",
-    description="CPU-friendly, multiple voices simulated, play and download audio."
+iface = gr.Interface(
+    fn=generate_voice,
+    inputs=gr.Textbox(lines=3, placeholder="Type your text here..."),
+    outputs=gr.Audio(type="file")
 )
 
-app.launch()
+iface.launch()
