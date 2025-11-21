@@ -1,6 +1,7 @@
-TTS
-gradio
+TTS==0.22.0
 torch
+torchaudio
+gradio
+ffmpeg-python
 soundfile
-transformers
-datasets
+numpy
