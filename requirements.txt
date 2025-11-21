@@ -1,4 +1,6 @@
+TTS
 gradio
-bark
-scipy
-numpy
+torch
+transformers
+datasets
+soundfile
