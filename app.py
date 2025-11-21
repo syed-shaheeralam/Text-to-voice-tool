@@ -2,13 +2,12 @@ import gradio as gr
 from TTS.api import TTS
 
 # -------------------------
-# SUPER-STABLE VOICES
+# FIXED – SUPER ACCURATE VOICES
 # -------------------------
 VOICE_MODELS = {
-    "English Female (LJSpeech-DDC)": "tts_models/en/ljspeech/tacotron2-DDC",
-    "English Fast (SpeedySpeech)": "tts_models/en/ljspeech/speedy-speech",
-    "Multilingual Female (YourTTS – Urdu/English)": "tts_models/multilingual/multi-dataset/your_tts",
-    "Premium Multilingual XTTS V2 (Male/Female)": "tts_models/multilingual/multi-dataset/xtts_v2",
+    "XTTS v2 Female (Best Urdu+English)": "tts_models/multilingual/multi-dataset/xtts_v2",
+    "XTTS v1 Multilingual (Stable)": "tts_models/multilingual/multi-dataset/xtts",
+    "English Female – WaveGlow (Super Clear)": "tts_models/en/ljspeech/tacotron2-DDC_ph"
 }
 
 # Cache models so HF Space doesn't reload them for every user
@@ -42,7 +41,7 @@ ui = gr.Interface(
         gr.Dropdown(
             label="Choose Voice",
             choices=list(VOICE_MODELS.keys()),
-            value="English Female (LJSpeech-DDC)"
+            value="XTTS v2 Female (Best Urdu+English)"
         )
     ],
     outputs=gr.Audio(type="filepath", label="Generated Voice"),
