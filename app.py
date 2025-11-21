@@ -1,6 +1,9 @@
+import os
+os.environ["COQUI_TOS_AGREED"] = "1"   # <<< FIX
+
 import gradio as gr
 from TTS.api import TTS
-import os
+import soundfile as sf
 
 VOICE_MODELS = {
     "XTTS v2 Female (Best Urdu+English)": "tts_models/multilingual/multi-dataset/xtts_v2",
@@ -24,17 +27,8 @@ def generate_voice(text, voice_selection):
     model_name = VOICE_MODELS[voice_selection]
     tts = load_model(model_name)
 
-    output_path = "output.wav"
-
-    # FIX 1: prevent overwrite crash
-    if os.path.exists(output_path):
-        os.remove(output_path)
-
-    # FIX 2: HF Spaces CPU crash fix
     audio = tts.tts(text=text)
-
-    # FIX 3: manually save audio
-    import soundfile as sf
+    output_path = "output.wav"
     sf.write(output_path, audio, 22050)
 
     return output_path
