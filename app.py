@@ -1,19 +1,20 @@
-from fastapi import FastAPI, Form
-from fastapi.responses import FileResponse
 from TTS.api import TTS
-import os
+import gradio as gr
 
-app = FastAPI()
+# Load model (best model for HuggingFace)
+tts = TTS("tts_models/en/ljspeech/tacotron2-DDC")
 
-# Load a model that does NOT require espeak
-tts = TTS(model_name="tts_models/en/ljspeech/tacotron2-DDC")
+def generate_voice(text):
+    output_path = "output.wav"
+    tts.tts_to_file(text=text, file_path=output_path)
+    return output_path
 
-@app.post("/generate")
-async def generate_voice(text: str = Form(...)):
-    out_path = "output.wav"
-    tts.tts_to_file(text=text, file_path=out_path)
-    return FileResponse(out_path)
+ui = gr.Interface(
+    fn=generate_voice,
+    inputs=gr.Textbox(label="Type your text here"),
+    outputs=gr.Audio(label="Generated Voice"),
+    title="AI Voice Generator",
+    description="Enter text and get high-quality speech."
+)
 
-@app.get("/")
-def home():
-    return {"message": "Voiceover API is running"}
+ui.launch()
