@@ -1,7 +1,4 @@
-TTS
+TTS==0.22.0
+gradio==4.29.0
 torch
 numpy
-fastapi
-uvicorn
-python-multipart
-aiofiles
