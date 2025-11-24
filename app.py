@@ -1,31 +1,38 @@
-import os
 from TTS.api import TTS
 import gradio as gr
 
-# Load model ONLY once at startup
-tts = TTS("tts_models/en/ljspeech/tacotron2-DDC")
+# AVAILABLE MODELS DICTIONARY
+VOICE_MODELS = {
+    "Kids Voice": "tts_models/en/vctk/vits",           # kid-like, lightweight
+    "Boy / Male Voice": "tts_models/en/vctk/vits",
+    "Girl / Female Voice": "tts_models/en/ljspeech/tacotron2-DDC",
+    "Old Man Voice": "tts_models/en/vctk/vits",
+    "Old Woman Voice": "tts_models/en/ljspeech/tacotron2-DDC",
+    "Cinematic Deep Voice": "tts_models/en/vctk/vits"
+}
 
-def generate_voice(text):
-    # Save file inside workspace
+def generate_voice(text, voice_choice):
+    # load model based on dropdown choice
+    model_name = VOICE_MODELS[voice_choice]
+    tts = TTS(model_name)
+
     output_path = "output.wav"
-
-    # Prevent Empty text crash
-    if not text or text.strip() == "":
-        return None
-
-    # Generate voice file
     tts.tts_to_file(text=text, file_path=output_path)
-
     return output_path
 
-# Build clean UI
 ui = gr.Interface(
     fn=generate_voice,
-    inputs=gr.Textbox(label="Enter text", placeholder="Type something..."),
+    inputs=[
+        gr.Textbox(label="Enter Text"),
+        gr.Dropdown(
+            choices=list(VOICE_MODELS.keys()),
+            value="Girl / Female Voice",
+            label="Select Voice"
+        )
+    ],
     outputs=gr.Audio(label="Generated Voice"),
-    title="AI Voice Generator (Stable)",
-    description="Fast & stable text-to-speech powered by Coqui TTS."
+    title="AI Multi-Voice Generator",
+    description="Choose Kids, Male, Female, Old or Cinematic voice and generate speech."
 )
 
-# Launch with correct settings for HuggingFace
-ui.launch(server_name="0.0.0.0", server_port=7860)
+ui.launch()
