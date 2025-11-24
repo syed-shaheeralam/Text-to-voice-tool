@@ -1,4 +1,4 @@
-TTS 
+TTS
 torch
 numpy
 fastapi
