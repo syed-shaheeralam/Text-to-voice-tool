@@ -1,52 +1,19 @@
-import os
-os.environ["COQUI_TOS_AGREED"] = "1"   # <<< FIX
-
-import gradio as gr
+from fastapi import FastAPI, Form
+from fastapi.responses import FileResponse
 from TTS.api import TTS
-import soundfile as sf
+import os
 
-VOICE_MODELS = {
-    "XTTS v2 Female (Best Urdu+English)": "tts_models/multilingual/multi-dataset/xtts_v2",
-    "XTTS v1 Multilingual (Stable)": "tts_models/multilingual/multi-dataset/xtts",
-    "English Female – WaveGlow": "tts_models/en/ljspeech/tacotron2-DDC_ph"
-}
+app = FastAPI()
 
-loaded_tts = {}
+# Load TTS model once when app starts
+tts = TTS(model_name="tts_models/en/vctk/vits")
 
-def load_model(model_name):
-    if model_name not in loaded_tts:
-        loaded_tts[model_name] = TTS(
-            model_name=model_name,
-            gpu=False,
-            progress_bar=False
-        )
-    return loaded_tts[model_name]
+@app.post("/generate")
+async def generate_voice(text: str = Form(...)):
+    out_path = "output.wav"
+    tts.tts_to_file(text=text, file_path=out_path)
+    return FileResponse(out_path)
 
-
-def generate_voice(text, voice_selection):
-    model_name = VOICE_MODELS[voice_selection]
-    tts = load_model(model_name)
-
-    audio = tts.tts(text=text)
-    output_path = "output.wav"
-    sf.write(output_path, audio, 22050)
-
-    return output_path
-
-
-ui = gr.Interface(
-    fn=generate_voice,
-    inputs=[
-        gr.Textbox(lines=3, label="Enter text"),
-        gr.Dropdown(
-            label="Choose Voice",
-            choices=list(VOICE_MODELS.keys()),
-            value="XTTS v2 Female (Best Urdu+English)"
-        )
-    ],
-    outputs=gr.Audio(type="filepath", label="Generated Voice"),
-    title="Ultra-Stable Multi-Voice TTS (SAE)",
-    description="Multiple voices, Urdu + English, multi-user support."
-)
-
-ui.launch()
+@app.get("/")
+def home():
+    return {"message": "Voiceover API is running"}
