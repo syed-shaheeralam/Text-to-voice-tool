@@ -1,29 +1,22 @@
+from fastapi import FastAPI, UploadFile, Form
+from fastapi.responses import FileResponse
 from TTS.api import TTS
-import gradio as gr
+import uuid
+import os
 
-model_name = "tts_models/multilingual/multi-dataset/xtts_v2"
-tts = TTS(model_name)
+app = FastAPI()
 
-def generate_voice(text, voice):
-    output_path = "output.wav"
-    tts.tts_to_file(
-        text=text,
-        speaker=voice,
-        file_path=output_path
-    )
-    return output_path
+# Load model (once, global)
+tts = TTS(model_name="tts_models/en/vctk/vits")
 
-voices = ["female-en-5", "male-en-2", "female-child", "old-man", "cinematic"]
+@app.post("/generate")
+async def generate_voice(text: str = Form(...), voice: str = Form("default")):
+    """
+    Generate voice for given text.
+    voice can be: "default", "p225", "f121", etc. (depends on model)
+    """
+    file_name = f"{uuid.uuid4()}.wav"
+    tts.tts_to_file(text=text, speaker=voice, file_path=file_name)
+    return FileResponse(file_name, media_type="audio/wav", filename=file_name)
 
-ui = gr.Interface(
-    fn=generate_voice,
-    inputs=[
-        gr.Textbox(label="Enter your text"),
-        gr.Dropdown(voices, label="Select Voice")
-    ],
-    outputs=gr.Audio(label="Generated Voice"),
-    title="Multi-Voice AI TTS",
-    description="Choose a voice and generate clean high-quality speech."
-)
-
-ui.launch()
+# To run: uvicorn app:app --reload --port 8000
