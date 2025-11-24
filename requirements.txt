@@ -1,5 +1,4 @@
 TTS==0.22.0
-gradio==4.29.0
-torch==2.2.2
-torchaudio==2.2.2
+gradio==4.44.0
+torch
 numpy
