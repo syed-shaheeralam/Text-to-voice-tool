@@ -1,37 +1,7 @@
-# Text-to-Speech
-TTS
+TTS 
 torch
-torchaudio
-
-# Audio processing
-librosa
-ffmpeg-python
-soundfile
-
-# Data processing
 numpy
-pandas
-scipy
-scikit-learn
-
-# UI
-gradio
-
-# FastAPI / backend
 fastapi
 uvicorn
-aiofiles
 python-multipart
-
-# Optional TTS extras
-inflect
-pysbd
-jieba
-pypinyin
-hangul-romanize
-gruut
-jamo
-unidecode
-einops
-transformers
-num2words
+aiofiles
