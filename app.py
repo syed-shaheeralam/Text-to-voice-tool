@@ -5,8 +5,8 @@ import os
 
 app = FastAPI()
 
-# Load TTS model once when app starts
-tts = TTS(model_name="tts_models/en/vctk/vits")
+# Load a model that does NOT require espeak
+tts = TTS(model_name="tts_models/en/ljspeech/tacotron2-DDC")
 
 @app.post("/generate")
 async def generate_voice(text: str = Form(...)):
