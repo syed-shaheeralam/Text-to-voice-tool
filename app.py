@@ -1,22 +1,38 @@
-from fastapi import FastAPI, Form
-from fastapi.responses import FileResponse
 from TTS.api import TTS
-import uuid
+import gradio as gr
 
-app = FastAPI()
+# AVAILABLE MODELS DICTIONARY
+VOICE_MODELS = {
+    "Kids Voice": "tts_models/en/vctk/vits",           # kid-like, lightweight
+    "Boy / Male Voice": "tts_models/en/vctk/vits",
+    "Girl / Female Voice": "tts_models/en/ljspeech/tacotron2-DDC",
+    "Old Man Voice": "tts_models/en/vctk/vits",
+    "Old Woman Voice": "tts_models/en/ljspeech/tacotron2-DDC",
+    "Cinematic Deep Voice": "tts_models/en/vctk/vits"
+}
 
-# Multi-voice model (requires espeak-ng for Windows)
-tts = TTS(model_name="tts_models/en/vctk/vits", progress_bar=False)
+def generate_voice(text, voice_choice):
+    # load model based on dropdown choice
+    model_name = VOICE_MODELS[voice_choice]
+    tts = TTS(model_name)
 
-@app.post("/generate")
-async def generate_voice(text: str = Form(...), speaker: str = Form("p226")):
-    """
-    Generate TTS audio
-    - text: text to convert
-    - speaker: choose from tts.speakers (kids, boy, girl, old, cinematic)
-    """
-    file_name = f"{uuid.uuid4()}.wav"
-    tts.tts_to_file(text=text, speaker=speaker, file_path=file_name)
-    return FileResponse(file_name, media_type="audio/wav", filename=file_name)
+    output_path = "output.wav"
+    tts.tts_to_file(text=text, file_path=output_path)
+    return output_path
 
-# Run: uvicorn app:app --reload --port 8000
+ui = gr.Interface(
+    fn=generate_voice,
+    inputs=[
+        gr.Textbox(label="Enter Text"),
+        gr.Dropdown(
+            choices=list(VOICE_MODELS.keys()),
+            value="Girl / Female Voice",
+            label="Select Voice"
+        )
+    ],
+    outputs=gr.Audio(label="Generated Voice"),
+    title="AI Multi-Voice Generator",
+    description="Choose Kids, Male, Female, Old or Cinematic voice and generate speech."
+)
+
+ui.launch()
