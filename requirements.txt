@@ -1,5 +1,6 @@
 gtts
 pyttsx3
-gradio
+espeak-ng
 pydub
+gradio
 ffmpeg-python
