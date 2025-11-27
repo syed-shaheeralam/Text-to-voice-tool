@@ -1,4 +1,6 @@
-TTS==0.22.0
-gradio==4.44.0
-torch
-numpy
+gtts
+pyttsx3
+flask
+pydub
+ffmpeg-python
+gunicorn
