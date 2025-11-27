@@ -21,7 +21,7 @@ def generate_voice(text, voice_type):
     # Kids voice: higher pitch
     if voice_type.lower() == "kids":
         sound = AudioSegment.from_file(output_file)
-        octaves = 0.25  # higher → child-like
+        octaves = 0.26  # higher → child-like
         new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
         sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})
         sound = sound.set_frame_rate(44100)
