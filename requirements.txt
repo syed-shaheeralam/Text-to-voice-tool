@@ -1,6 +1,5 @@
 gtts
 pyttsx3
-espeak-ng
 pydub
 gradio
 ffmpeg-python
