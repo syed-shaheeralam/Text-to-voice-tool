@@ -15,7 +15,7 @@ def generate_voice(text, voice_type):
         octaves = -0.25  # deeper
         new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
         sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})
-        sound = sound.set_frame_rate(44100)  # keep speed normal
+        sound = sound.set_frame_rate(44100)  # normal speed
         sound.export(output_file, format="mp3")
 
     # Kids voice: higher pitch
@@ -27,15 +27,13 @@ def generate_voice(text, voice_type):
         sound = sound.set_frame_rate(44100)
         sound.export(output_file, format="mp3")
 
-    # Old voice: slightly lower pitch + slower
+    # Old voice: lower pitch, normal speed
     if voice_type.lower() == "old":
         sound = AudioSegment.from_file(output_file)
-        octaves = -0.35  # lower pitch
+        octaves = -0.35  # lower pitch → elderly
         new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
         sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})
-        # slow down a little
-        sound = sound.speedup(playback_speed=0.9)  # slightly slower
-        sound = sound.set_frame_rate(44100)
+        sound = sound.set_frame_rate(44100)  # normal speed
         sound.export(output_file, format="mp3")
 
     return output_file
@@ -51,5 +49,5 @@ with gr.Blocks() as demo:
     generate_btn = gr.Button("Generate")
     generate_btn.click(generate_voice, inputs=[text_input, voice_dropdown], outputs=audio_output)
 
-# Launch app with public link
+# Launch app with public link for multiple users
 demo.launch(share=True)
