@@ -9,72 +9,76 @@ def generate_voice(text, voice_type):
     tts = gTTS(text=text, lang="en")
     tts.save(output_file)
 
-    # Male voice: deeper pitch
+    # ---------- Voice Transformations ----------
+
+    # Male: deeper, normal speed
     if voice_type.lower() == "male":
         sound = AudioSegment.from_file(output_file)
         octaves = -0.25
-        new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
+        new_sample_rate = int(sound.frame_rate * (2 ** octaves))
         sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})
         sound = sound.set_frame_rate(44100)
         sound.export(output_file, format="mp3")
 
-    # Kids voice: higher pitch
+    # Female: default gTTS → natural
+    # Kids: higher pitch, slightly faster
     if voice_type.lower() == "kids":
         sound = AudioSegment.from_file(output_file)
-        octaves = 0.25
-        new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
+        octaves = 0.35
+        new_sample_rate = int(sound.frame_rate * (2 ** octaves))
         sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})
+        # slightly faster for playful feel
+        sound = sound._spawn(sound.raw_data, overrides={'frame_rate': int(sound.frame_rate * 1.05)})
         sound = sound.set_frame_rate(44100)
         sound.export(output_file, format="mp3")
 
-    # Old voice: realistic elderly
+    # Old: deep, slightly slower → realistic elderly
     if voice_type.lower() == "old":
         sound = AudioSegment.from_file(output_file)
-        octaves = -0.55
-        new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
+        octaves = -0.6
+        new_sample_rate = int(sound.frame_rate * (2 ** octaves))
         sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})
         sound = sound.set_frame_rate(44100)
         sound.export(output_file, format="mp3")
 
-    # Cinematic / Narrator voice
+    # Cinematic: slightly deep, slightly faster → dramatic narrator
     if voice_type.lower() == "cinematic":
         sound = AudioSegment.from_file(output_file)
         octaves = -0.2
-        new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
+        new_sample_rate = int(sound.frame_rate * (2 ** octaves))
         sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})
-        sound = sound._spawn(sound.raw_data, overrides={'frame_rate': int(sound.frame_rate * 1.05)})
+        sound = sound._spawn(sound.raw_data, overrides={'frame_rate': int(sound.frame_rate * 1.08)})
         sound = sound.set_frame_rate(44100)
         sound.export(output_file, format="mp3")
 
-    # Cartoon / Animated voice
+    # Cartoon: very high pitch, faster → playful / exaggerated
     if voice_type.lower() == "cartoon":
         sound = AudioSegment.from_file(output_file)
-        octaves = 0.45
-        new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
+        octaves = 0.5
+        new_sample_rate = int(sound.frame_rate * (2 ** octaves))
         sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})
-        sound = sound._spawn(sound.raw_data, overrides={'frame_rate': int(sound.frame_rate * 1.1)})
+        sound = sound._spawn(sound.raw_data, overrides={'frame_rate': int(sound.frame_rate * 1.15)})
         sound = sound.set_frame_rate(44100)
         sound.export(output_file, format="mp3")
 
-    # Robot voice
+    # Robot: metallic, slightly deep, overlayed → electronic feel
     if voice_type.lower() == "robot":
         sound = AudioSegment.from_file(output_file)
-        octaves = -0.1  # slightly deep
-        new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
+        octaves = -0.15
+        new_sample_rate = int(sound.frame_rate * (2 ** octaves))
         sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})
-        # Add metallic feel by slightly overlaying
-        sound = sound.overlay(sound - 6)  
+        # overlay for metallic effect
+        sound = sound.overlay(sound - 6)
         sound = sound.set_frame_rate(44100)
         sound.export(output_file, format="mp3")
 
-    # Sci-Fi / Futuristic voice
+    # Sci-Fi: futuristic, slightly high, modulated, slightly faster
     if voice_type.lower() == "sci-fi":
         sound = AudioSegment.from_file(output_file)
-        octaves = 0.2  # slightly high pitch
-        new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
+        octaves = 0.25
+        new_sample_rate = int(sound.frame_rate * (2 ** octaves))
         sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})
-        # Slight modulation effect
-        sound = sound._spawn(sound.raw_data, overrides={'frame_rate': int(sound.frame_rate * 1.05)})
+        sound = sound._spawn(sound.raw_data, overrides={'frame_rate': int(sound.frame_rate * 1.08)})
         sound = sound.set_frame_rate(44100)
         sound.export(output_file, format="mp3")
 
@@ -94,5 +98,6 @@ with gr.Blocks() as demo:
     generate_btn = gr.Button("Generate")
     generate_btn.click(generate_voice, inputs=[text_input, voice_dropdown], outputs=audio_output)
 
-# Launch app with public link for multiple users
+# Launch app
+# Use share=True locally for temporary public URL, remove on Hugging Face Spaces
 demo.launch(share=True)
