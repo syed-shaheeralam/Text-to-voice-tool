@@ -21,9 +21,20 @@ def generate_voice(text, voice_type):
     # Kids voice: higher pitch
     if voice_type.lower() == "kids":
         sound = AudioSegment.from_file(output_file)
-        octaves = 0.26  # higher → child-like
+        octaves = 0.25  # higher → child-like
         new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
         sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})
+        sound = sound.set_frame_rate(44100)
+        sound.export(output_file, format="mp3")
+
+    # Old voice: slightly lower pitch + slower
+    if voice_type.lower() == "old":
+        sound = AudioSegment.from_file(output_file)
+        octaves = -0.35  # lower pitch
+        new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
+        sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})
+        # slow down a little
+        sound = sound.speedup(playback_speed=0.9)  # slightly slower
         sound = sound.set_frame_rate(44100)
         sound.export(output_file, format="mp3")
 
@@ -31,14 +42,14 @@ def generate_voice(text, voice_type):
 
 # ---------- Gradio UI ----------
 with gr.Blocks() as demo:
-    gr.Markdown("# 🎤 HuggingFace TTS — Female, Male (Deep), Kids (High-Pitch)")
+    gr.Markdown("# 🎤 HuggingFace TTS — Female, Male, Kids, Old Voice")
 
     text_input = gr.Textbox(label="Enter text")
-    voice_dropdown = gr.Dropdown(["Female", "Male", "Kids"], value="Female", label="Select Voice")
+    voice_dropdown = gr.Dropdown(["Female", "Male", "Kids", "Old"], value="Female", label="Select Voice")
     audio_output = gr.Audio(label="Generated Voice", type="filepath")
 
     generate_btn = gr.Button("Generate")
     generate_btn.click(generate_voice, inputs=[text_input, voice_dropdown], outputs=audio_output)
 
-# Launch app with public link for multiple users
+# Launch app with public link
 demo.launch(share=True)
