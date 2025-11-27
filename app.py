@@ -1,50 +1,52 @@
 import gradio as gr
 from gtts import gTTS
 import pyttsx3
-import os
 from pydub import AudioSegment
 
-# ---------- FEMALE VOICE (GTTS) ----------
+# ---------- FEMALE (GTTS) ----------
 def female_voice(text):
     tts = gTTS(text=text, lang="en")
-    tts.save("female_output.mp3")
-    return "female_output.mp3"
+    tts.save("female.mp3")
+    return "female.mp3"
 
-# ---------- MALE VOICE (pyttsx3 + espeak-ng) ----------
+# ---------- MALE (pyttsx3 using espeak inside HF) ----------
 def male_voice(text):
     engine = pyttsx3.init()
 
-    # force espeak-ng (HuggingFace compatible)
-    engine.setProperty("voice", "english-us")
-    engine.setProperty("rate", 160)
-    engine.setProperty("pitch", 40)
+    voices = engine.getProperty("voices")
 
-    engine.save_to_file(text, "male_raw.wav")
+    # Select male voice safely
+    for v in voices:
+        if "male" in v.name.lower() or "en-us" in v.id.lower():
+            engine.setProperty("voice", v.id)
+            break
+
+    engine.setProperty("rate", 150)
+
+    engine.save_to_file(text, "male.wav")
     engine.runAndWait()
 
-    # convert to mp3
-    sound = AudioSegment.from_wav("male_raw.wav")
-    sound.export("male_output.mp3", format="mp3")
+    sound = AudioSegment.from_wav("male.wav")
+    sound.export("male.mp3", format="mp3")
 
-    return "male_output.mp3"
+    return "male.mp3"
 
-# ---------- MAIN FUNCTION ----------
-def generate_voice(text, voice_type):
-    if voice_type == "Female":
+# ---------- MASTER ----------
+def generate(text, voice):
+    if voice == "Female":
         return female_voice(text)
     else:
         return male_voice(text)
 
-# ---------- GRADIO UI ----------
+# ---------- UI ----------
 with gr.Blocks() as demo:
-    gr.Markdown("# 🎤 Simple TTS (gTTS + pyttsx3)")
+    gr.Markdown("## 🎤 Simple TTS — Female (gTTS) + Male (pyttsx3)")
 
-    text = gr.Textbox(label="Enter text")
-    voice = gr.Dropdown(["Female", "Male"], value="Female", label="Select Voice")
-    audio_out = gr.Audio(label="Generated Voice", type="filepath")
+    text = gr.Textbox(label="Enter Text")
+    voice = gr.Dropdown(["Female", "Male"], label="Select Voice", value="Female")
+    out = gr.Audio(label="Generated Voice", type="filepath")
 
-    gen_btn = gr.Button("Generate")
-
-    gen_btn.click(generate_voice, inputs=[text, voice], outputs=audio_out)
+    btn = gr.Button("Generate")
+    btn.click(generate, inputs=[text, voice], outputs=out)
 
 demo.launch()
