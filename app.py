@@ -19,7 +19,7 @@ def generate_voice(text, voice_type):
         sound.export(output_file, format="mp3")
 
     # Kids voice: higher pitch
-    if voice_type.lower() == "kid":
+    if voice_type.lower() == "kids":
         sound = AudioSegment.from_file(output_file)
         octaves = 0.25
         new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
@@ -36,15 +36,13 @@ def generate_voice(text, voice_type):
         sound = sound.set_frame_rate(44100)
         sound.export(output_file, format="mp3")
 
-    # Cinematic / Narrator voice
+    # Cinematic / Narrator voice (corrected)
     if voice_type.lower() == "cinematic":
         sound = AudioSegment.from_file(output_file)
-        octaves = -0.2  # slightly deep
+        octaves = -0.25  # slightly deep for dramatic feel
         new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
         sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})
-        # Slightly slower for dramatic effect
-        sound = sound.speedup(playback_speed=0.9)
-        sound = sound.set_frame_rate(44100)
+        sound = sound.set_frame_rate(44100)  # normal speed
         sound.export(output_file, format="mp3")
 
     return output_file
@@ -54,7 +52,7 @@ with gr.Blocks() as demo:
     gr.Markdown("# 🎤 HuggingFace TTS — Female, Male, Kids, Realistic Old + Cinematic Voice")
 
     text_input = gr.Textbox(label="Enter text")
-    voice_dropdown = gr.Dropdown(["Female", "Male", "Kid", "Old", "Cinematic"], value="Female", label="Select Voice")
+    voice_dropdown = gr.Dropdown(["Female", "Male", "Kids", "Old", "Cinematic"], value="Female", label="Select Voice")
     audio_output = gr.Audio(label="Generated Voice", type="filepath")
 
     generate_btn = gr.Button("Generate")
