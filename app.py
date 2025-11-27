@@ -27,22 +27,24 @@ def generate_voice(text, voice_type):
         sound = sound.set_frame_rate(44100)
         sound.export(output_file, format="mp3")
 
-    # Old voice: realistic elderly
+    # Old voice: realistic elderly (slightly deeper)
     if voice_type.lower() == "old":
         sound = AudioSegment.from_file(output_file)
-        octaves = -0.45  # deeper → realistic elderly
+        octaves = -0.55  # deeper than before
         new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
         sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})
         sound = sound.set_frame_rate(44100)
         sound.export(output_file, format="mp3")
 
-    # Cinematic / Narrator voice (corrected)
+    # Cinematic / Narrator voice (clearly distinct)
     if voice_type.lower() == "cinematic":
         sound = AudioSegment.from_file(output_file)
-        octaves = -0.25  # slightly deep for dramatic feel
+        octaves = -0.2  # slightly deep
         new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
         sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})
-        sound = sound.set_frame_rate(44100)  # normal speed
+        # Slightly faster for dynamic cinematic feel
+        sound = sound._spawn(sound.raw_data, overrides={'frame_rate': int(sound.frame_rate * 1.05)})
+        sound = sound.set_frame_rate(44100)
         sound.export(output_file, format="mp3")
 
     return output_file
