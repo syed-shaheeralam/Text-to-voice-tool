@@ -1,10 +1,8 @@
-from flask import Flask, request, send_file
+import gradio as gr
 from gtts import gTTS
 import pyttsx3
 import os
 from pydub import AudioSegment
-
-app = Flask(__name__)
 
 # ---------- FEMALE VOICE (gTTS) ----------
 def female_voice(text):
@@ -15,35 +13,48 @@ def female_voice(text):
 # ---------- MALE VOICE (pyttsx3) ----------
 def male_voice(text):
     engine = pyttsx3.init()
-    engine.setProperty("voice", "com.apple.speech.synthesis.voice.Alex" if "darwin" in os.sys.platform else engine.getProperty("voices")[0].id)
+    voices = engine.getProperty("voices")
+    
+    # try to pick a male voice
+    male = None
+    for v in voices:
+        if "male" in v.name.lower() or "alex" in v.name.lower():
+            male = v.id
+            break
+
+    engine.setProperty("voice", male if male else voices[0].id)
     engine.save_to_file(text, "male_output.mp3")
     engine.runAndWait()
     return "male_output.mp3"
 
-@app.route("/tts", methods=["POST"])
-def tts():
-    text = request.json.get("text")
-    voice = request.json.get("voice")
+# ---------- MAIN FUNCTION ----------
+def generate_voice(text, voice_type):
+    if not text.strip():
+        return None
 
-    if not text:
-        return {"error": "Text missing"}, 400
-
-    if voice == "female":
-        file_path = female_voice(text)
-    elif voice == "male":
-        file_path = male_voice(text)
+    if voice_type == "Female":
+        output = female_voice(text)
     else:
-        return {"error": "Invalid voice"}, 400
+        output = male_voice(text)
 
-    return send_file(file_path, as_attachment=True)
+    return output
 
-@app.route("/")
-def home():
-    return {
-        "message": "TTS API is running",
-        "voices": ["female", "male"],
-        "usage": "POST /tts {text:'hello', voice:'female'}"
-    }
+# ---------- GRADIO UI ----------
+with gr.Blocks(title="Simple TTS App") as demo:
+    gr.Markdown("# 🎙️ Text to Speech Generator")
+    gr.Markdown("Select a voice & enter your text to generate speech.")
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=7860)
+    text_input = gr.Textbox(label="Enter text here", placeholder="Type anything...")
+    voice_dropdown = gr.Dropdown(["Female", "Male"], value="Female", label="Select Voice")
+
+    output_audio = gr.Audio(label="Generated Voice", type="filepath")
+
+    generate_btn = gr.Button("Generate Voice")
+
+    generate_btn.click(
+        fn=generate_voice,
+        inputs=[text_input, voice_dropdown],
+        outputs=output_audio
+    )
+
+demo.launch()
