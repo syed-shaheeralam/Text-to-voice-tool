@@ -12,25 +12,25 @@ def generate_voice(text, voice_type):
     # Male voice: deeper pitch
     if voice_type.lower() == "male":
         sound = AudioSegment.from_file(output_file)
-        octaves = -0.25  # deeper
-        new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
-        sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})
-        sound = sound.set_frame_rate(44100)  # normal speed
-        sound.export(output_file, format="mp3")
-
-    # Kids voice: higher pitch
-    if voice_type.lower() == "kids":
-        sound = AudioSegment.from_file(output_file)
-        octaves = 0.25  # higher → child-like
+        octaves = -0.25
         new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
         sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})
         sound = sound.set_frame_rate(44100)
         sound.export(output_file, format="mp3")
 
-    # Old voice: lower pitch, normal speed
+    # Kids voice: higher pitch
+    if voice_type.lower() == "kids":
+        sound = AudioSegment.from_file(output_file)
+        octaves = 0.25
+        new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
+        sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})
+        sound = sound.set_frame_rate(44100)
+        sound.export(output_file, format="mp3")
+
+    # Old voice: **realistic elderly** (updated only)
     if voice_type.lower() == "old":
         sound = AudioSegment.from_file(output_file)
-        octaves = -0.35  # lower pitch → elderly
+        octaves = -0.45  # deeper → realistic elderly
         new_sample_rate = int(sound.frame_rate * (2.0 ** octaves))
         sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})
         sound = sound.set_frame_rate(44100)  # normal speed
@@ -40,7 +40,7 @@ def generate_voice(text, voice_type):
 
 # ---------- Gradio UI ----------
 with gr.Blocks() as demo:
-    gr.Markdown("# 🎤 HuggingFace TTS — Female, Male, Kids, Old Voice")
+    gr.Markdown("# 🎤 HuggingFace TTS — Female, Male, Kids, Realistic Old Voice")
 
     text_input = gr.Textbox(label="Enter text")
     voice_dropdown = gr.Dropdown(["Female", "Male", "Kids", "Old"], value="Female", label="Select Voice")
