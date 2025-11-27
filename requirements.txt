@@ -1,6 +1,5 @@
 gtts
 pyttsx3
-flask
+gradio
 pydub
 ffmpeg-python
-gunicorn
