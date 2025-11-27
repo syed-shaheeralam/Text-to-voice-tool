@@ -9,12 +9,12 @@ def generate_voice(text, voice_type):
     tts = gTTS(text=text, lang="en")
     tts.save(output_file)
 
-    # Male voice deeper
+    # Male voice deepening
     if voice_type.lower() == "male":
         sound = AudioSegment.from_file(output_file)
-        # extra deep: slow down more (0.7x)
+        # lower pitch: speed down 0.85x
         sound = sound._spawn(sound.raw_data, overrides={
-            "frame_rate": int(sound.frame_rate * 0.7)
+            "frame_rate": int(sound.frame_rate * 0.85)
         }).set_frame_rate(sound.frame_rate)
         sound.export(output_file, format="mp3")
 
@@ -22,7 +22,7 @@ def generate_voice(text, voice_type):
 
 # ---------- Gradio UI ----------
 with gr.Blocks() as demo:
-    gr.Markdown("# 🎤 HuggingFace TTS — Female + Extra Deep Male")
+    gr.Markdown("# 🎤 HuggingFace Safe TTS — Female + Male (Deep)")
 
     text_input = gr.Textbox(label="Enter text")
     voice_dropdown = gr.Dropdown(["Female", "Male"], value="Female", label="Select Voice")
