@@ -30,7 +30,7 @@ def generate_voice(text, voice_type):
         speed = 1.08
     elif voice_type.lower() == "cartoon":
         octaves = 0.5
-        speed = 1.15
+        speed = 1.07   # ← ONLY THIS LINE CHANGED (speed reduced)
     elif voice_type.lower() == "robot":
         octaves = -0.15
         speed = 1.0
@@ -53,13 +53,10 @@ def generate_voice(text, voice_type):
 
     # Add optional voice effects
     if voice_type.lower() == "robot":
-        # metallic overlay
         sound = sound.overlay(sound - 6)
     elif voice_type.lower() == "sci-fi":
-        # slight modulation
         sound = sound._spawn(sound.raw_data, overrides={'frame_rate': int(sound.frame_rate * 1.02)})
     elif voice_type.lower() in ["cinematic", "cartoon"]:
-        # subtle fade for smoothness
         sound = sound.fade_in(100).fade_out(100)
 
     # Normalize volume
@@ -83,6 +80,4 @@ with gr.Blocks() as demo:
     generate_btn = gr.Button("Generate")
     generate_btn.click(generate_voice, inputs=[text_input, voice_dropdown], outputs=audio_output)
 
-# Launch app
-# Locally: share=True for temporary public URL; Hugging Face Spaces: remove share=True
 demo.launch(share=True)
