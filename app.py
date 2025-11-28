@@ -19,7 +19,7 @@ def generate_voice(text, voice_type):
     elif voice_type.lower() == "female":
         octaves = 0.0
         speed = 1.0
-    elif voice_type.lower() == "kids":
+    elif voice_type.lower() == "kid":
         octaves = 0.35
         speed = 1.05
     elif voice_type.lower() == "old":
@@ -68,11 +68,11 @@ def generate_voice(text, voice_type):
 
 # ---------- Gradio UI ----------
 with gr.Blocks() as demo:
-    gr.Markdown("# 🎤 Professional TTS — Female, Male, Kids, Old, Cinematic, Cartoon, Robot + Sci-Fi")
+    gr.Markdown("# 🎤 Professional TTS — Female, Male, Kid, Old, Cinematic, Cartoon, Robot + Sci-Fi")
 
     text_input = gr.Textbox(label="Enter text")
     voice_dropdown = gr.Dropdown(
-        ["Female", "Male", "Kids", "Old", "Cinematic", "Cartoon", "Robot", "Sci-Fi"],
+        ["Female", "Male", "Kid", "Old", "Cinematic", "Cartoon", "Robot", "Sci-Fi"],
         value="Female", label="Select Voice"
     )
     audio_output = gr.Audio(label="Generated Voice", type="filepath")
