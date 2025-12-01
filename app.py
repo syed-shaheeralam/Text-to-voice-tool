@@ -3,19 +3,28 @@ from gtts import gTTS
 from pydub import AudioSegment
 from pydub.effects import normalize
 import os
+import uuid
 
 # ---------- Generate voice function ----------
 def generate_voice(text, voice_type, clone_file):
-    output_file = f"{voice_type.lower()}.mp3"
-    output_path = os.path.abspath(output_file)  # Absolute path for Gradio
+    # Unique filename per request to avoid conflicts
+    output_file = f"{uuid.uuid4()}.mp3"
+    output_path = os.path.abspath(output_file)
 
     # ---------- Clone voice ----------
     if voice_type.lower() == "clone" and clone_file is not None:
         try:
             from TTS.api import TTS
 
-            # ✅ Correct voice cloning model
+            # Use CPU for compatibility; set gpu=True if you enable GPU in Spaces
             tts = TTS(model_name="tts_models/en/vctk/vits", progress_bar=False, gpu=False)
+
+            # Ensure clone file is WAV
+            if not clone_file.lower().endswith(".wav"):
+                temp_wav = f"{uuid.uuid4()}.wav"
+                sound = AudioSegment.from_file(clone_file)
+                sound.export(temp_wav, format="wav")
+                clone_file = temp_wav
 
             # Generate cloned voice
             tts.tts_to_file(text=text, speaker_wav=clone_file, file_path=output_path)
@@ -38,33 +47,17 @@ def generate_voice(text, voice_type, clone_file):
     sound = AudioSegment.from_file(output_path)
 
     # ---------- Voice Transformations ----------
-    if voice_type.lower() == "male":
-        octaves = -0.25
-        speed = 1.0
-    elif voice_type.lower() == "female":
-        octaves = 0.0
-        speed = 1.0
-    elif voice_type.lower() == "kid":
-        octaves = 0.35
-        speed = 1.05
-    elif voice_type.lower() == "old":
-        octaves = -0.6
-        speed = 0.95
-    elif voice_type.lower() == "cinematic":
-        octaves = -0.2
-        speed = 1.08
-    elif voice_type.lower() == "cartoon":
-        octaves = 0.5
-        speed = 1.07
-    elif voice_type.lower() == "robot":
-        octaves = -0.15
-        speed = 1.0
-    elif voice_type.lower() == "sci-fi":
-        octaves = 0.25
-        speed = 1.08
-    else:
-        octaves = 0.0
-        speed = 1.0
+    voice_settings = {
+        "male": (-0.25, 1.0),
+        "female": (0.0, 1.0),
+        "kid": (0.35, 1.05),
+        "old": (-0.6, 0.95),
+        "cinematic": (-0.2, 1.08),
+        "cartoon": (0.5, 1.07),
+        "robot": (-0.15, 1.0),
+        "sci-fi": (0.25, 1.08)
+    }
+    octaves, speed = voice_settings.get(voice_type.lower(), (0.0, 1.0))
 
     # Change pitch
     new_sample_rate = int(sound.frame_rate * (2 ** octaves))
