@@ -3,7 +3,7 @@ from gtts import gTTS
 from pydub import AudioSegment
 from pydub.effects import normalize
 
-# --- Fixed clone using TTS library ---
+# ---------- Generate voice function ----------
 def generate_voice(text, voice_type, clone_file):
     output_file = f"{voice_type.lower()}.mp3"
 
@@ -12,14 +12,15 @@ def generate_voice(text, voice_type, clone_file):
         try:
             from TTS.api import TTS
 
-            # Load a TTS model with voice cloning capability
-            tts = TTS(model_name="tts_models/multilingual/multi-dataset/your_tts", progress_bar=False, gpu=False)
+            # ✅ Correct voice cloning model
+            tts = TTS(model_name="tts_models/en/vctk/vits", progress_bar=False, gpu=False)
 
             # Generate cloned voice
             tts.tts_to_file(text=text, speaker_wav=clone_file, file_path=output_file)
             return output_file
         except Exception as e:
-            return None  # Or handle error gracefully
+            print("Error in clone generation:", e)
+            return None  # Graceful failure
 
     # ---------- Generate TTS (Normal Voices) ----------
     tts = gTTS(text=text, lang="en")
@@ -80,7 +81,6 @@ def generate_voice(text, voice_type, clone_file):
     # Export final audio
     sound.export(output_file, format="mp3")
     return output_file
-
 
 # ---------- Gradio UI ----------
 with gr.Blocks() as demo:
