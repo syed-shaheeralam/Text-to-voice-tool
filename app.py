@@ -3,21 +3,23 @@ from gtts import gTTS
 from pydub import AudioSegment
 from pydub.effects import normalize
 
+# --- Fixed clone using TTS library ---
 def generate_voice(text, voice_type, clone_file):
     output_file = f"{voice_type.lower()}.mp3"
 
     # ---------- Clone voice ----------
     if voice_type.lower() == "clone" and clone_file is not None:
-        base_tts = gTTS(text=text, lang="en")
-        base_tts.save(output_file)
+        try:
+            from TTS.api import TTS
 
-        user_audio = AudioSegment.from_file(clone_file)
-        base_voice = AudioSegment.from_file(output_file)
+            # Load a TTS model with voice cloning capability
+            tts = TTS(model_name="tts_models/multilingual/multi-dataset/your_tts", progress_bar=False, gpu=False)
 
-        blended = base_voice.overlay(user_audio - 6)
-
-        blended.export(output_file, format="mp3")
-        return output_file
+            # Generate cloned voice
+            tts.tts_to_file(text=text, speaker_wav=clone_file, file_path=output_file)
+            return output_file
+        except Exception as e:
+            return None  # Or handle error gracefully
 
     # ---------- Generate TTS (Normal Voices) ----------
     tts = gTTS(text=text, lang="en")
@@ -79,6 +81,7 @@ def generate_voice(text, voice_type, clone_file):
     sound.export(output_file, format="mp3")
     return output_file
 
+
 # ---------- Gradio UI ----------
 with gr.Blocks() as demo:
     gr.Markdown("# 🎤 Professional TTS — Female, Male, Kid, Old, Cinematic, Cartoon, Robot, Sci-Fi + Clone Your Voice")
@@ -93,7 +96,7 @@ with gr.Blocks() as demo:
 
     clone_audio = gr.Audio(
         label="Upload voice sample (5–10 sec)",
-        type="filepath"      # ✅ FIXED (NO ERROR)
+        type="filepath"
     )
 
     audio_output = gr.Audio(label="Generated Voice", type="filepath")
