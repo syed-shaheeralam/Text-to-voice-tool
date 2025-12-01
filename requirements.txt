@@ -3,3 +3,7 @@ pyttsx3
 pydub
 gradio
 ffmpeg-python
+TTS
+torch
+numpy
+soundfile
