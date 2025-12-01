@@ -2,10 +2,12 @@ import gradio as gr
 from gtts import gTTS
 from pydub import AudioSegment
 from pydub.effects import normalize
+import os
 
 # ---------- Generate voice function ----------
 def generate_voice(text, voice_type, clone_file):
     output_file = f"{voice_type.lower()}.mp3"
+    output_path = os.path.abspath(output_file)  # Absolute path for Gradio
 
     # ---------- Clone voice ----------
     if voice_type.lower() == "clone" and clone_file is not None:
@@ -16,17 +18,24 @@ def generate_voice(text, voice_type, clone_file):
             tts = TTS(model_name="tts_models/en/vctk/vits", progress_bar=False, gpu=False)
 
             # Generate cloned voice
-            tts.tts_to_file(text=text, speaker_wav=clone_file, file_path=output_file)
-            return output_file
+            tts.tts_to_file(text=text, speaker_wav=clone_file, file_path=output_path)
+
+            # Ensure file exists before returning
+            if os.path.exists(output_path):
+                return output_path
+            else:
+                print("Error: cloned audio file not created")
+                return None
+
         except Exception as e:
             print("Error in clone generation:", e)
-            return None  # Graceful failure
+            return None
 
     # ---------- Generate TTS (Normal Voices) ----------
     tts = gTTS(text=text, lang="en")
-    tts.save(output_file)
+    tts.save(output_path)
 
-    sound = AudioSegment.from_file(output_file)
+    sound = AudioSegment.from_file(output_path)
 
     # ---------- Voice Transformations ----------
     if voice_type.lower() == "male":
@@ -79,8 +88,8 @@ def generate_voice(text, voice_type, clone_file):
     sound = normalize(sound)
 
     # Export final audio
-    sound.export(output_file, format="mp3")
-    return output_file
+    sound.export(output_path, format="mp3")
+    return output_path
 
 # ---------- Gradio UI ----------
 with gr.Blocks() as demo:
@@ -95,7 +104,7 @@ with gr.Blocks() as demo:
     )
 
     clone_audio = gr.Audio(
-        label="Upload voice sample (5–10 sec)",
+        label="Upload voice sample (5–10 sec, .wav preferred)",
         type="filepath"
     )
 
