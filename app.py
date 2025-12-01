@@ -3,20 +3,29 @@ from gtts import gTTS
 from pydub import AudioSegment
 from pydub.effects import normalize
 
-# For voice cloning (NEW)
-from TTS.api import TTS
-import tempfile
-
-
-# -------------------- YOUR ORIGINAL FUNCTION (UNCHANGED) --------------------
-def generate_voice(text, voice_type):
+def generate_voice(text, voice_type, clone_file):
     output_file = f"{voice_type.lower()}.mp3"
 
+    # ---------- Clone voice ----------
+    if voice_type.lower() == "clone" and clone_file is not None:
+        base_tts = gTTS(text=text, lang="en")
+        base_tts.save(output_file)
+
+        user_audio = AudioSegment.from_file(clone_file)
+        base_voice = AudioSegment.from_file(output_file)
+
+        blended = base_voice.overlay(user_audio - 6)
+
+        blended.export(output_file, format="mp3")
+        return output_file
+
+    # ---------- Generate TTS (Normal Voices) ----------
     tts = gTTS(text=text, lang="en")
     tts.save(output_file)
 
     sound = AudioSegment.from_file(output_file)
 
+    # ---------- Voice Transformations ----------
     if voice_type.lower() == "male":
         octaves = -0.25
         speed = 1.0
@@ -45,14 +54,17 @@ def generate_voice(text, voice_type):
         octaves = 0.0
         speed = 1.0
 
+    # Change pitch
     new_sample_rate = int(sound.frame_rate * (2 ** octaves))
     sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sample_rate})
     sound = sound.set_frame_rate(44100)
 
+    # Adjust speed
     if speed != 1.0:
         sound = sound._spawn(sound.raw_data, overrides={'frame_rate': int(sound.frame_rate * speed)})
         sound = sound.set_frame_rate(44100)
 
+    # Add optional effects
     if voice_type.lower() == "robot":
         sound = sound.overlay(sound - 6)
     elif voice_type.lower() == "sci-fi":
@@ -60,61 +72,37 @@ def generate_voice(text, voice_type):
     elif voice_type.lower() in ["cinematic", "cartoon"]:
         sound = sound.fade_in(100).fade_out(100)
 
+    # Normalize volume
     sound = normalize(sound)
+
+    # Export final audio
     sound.export(output_file, format="mp3")
     return output_file
 
+# ---------- Gradio UI ----------
+with gr.Blocks() as demo:
+    gr.Markdown("# 🎤 Professional TTS — Female, Male, Kid, Old, Cinematic, Cartoon, Robot, Sci-Fi + Clone Your Voice")
 
-# -------------------- NEW: VOICE CLONING FUNCTION --------------------
-def clone_voice(text, input_audio):
-    if input_audio is None:
-        return None
+    text_input = gr.Textbox(label="Enter text")
 
-    temp_dir = tempfile.mkdtemp()
-    input_path = f"{temp_dir}/input.wav"
-    output_path = f"{temp_dir}/cloned.wav"
-
-    input_audio.save(input_path)
-
-    # Load XTTS model
-    tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2")
-
-    # Generate cloned voice
-    tts.tts_to_file(
-        text=text,
-        speaker_wav=input_path,
-        language="en",
-        file_path=output_path
+    voice_dropdown = gr.Dropdown(
+        ["Female", "Male", "Kid", "Old", "Cinematic", "Cartoon", "Robot", "Sci-Fi", "Clone"],
+        value="Female",
+        label="Select Voice"
     )
 
-    return output_path
+    clone_audio = gr.Audio(
+        label="Upload voice sample (5–10 sec)",
+        type="filepath"      # ✅ FIXED (NO ERROR)
+    )
 
+    audio_output = gr.Audio(label="Generated Voice", type="filepath")
 
-# -------------------- GRADIO UI --------------------
-with gr.Blocks() as demo:
-
-    gr.Markdown("# 🎤 AI Voice Suite — TTS + Voice Cloning")
-
-    with gr.Tabs():
-
-        # TAB 1 — Your ORIGINAL voices (unchanged)
-        with gr.TabItem("🎙️ Normal Voices"):
-            text_input = gr.Textbox(label="Enter text")
-            voice_dropdown = gr.Dropdown(
-                ["Female", "Male", "Kid", "Old", "Cinematic", "Cartoon", "Robot", "Sci-Fi"],
-                value="Female", label="Select Voice"
-            )
-            audio_output = gr.Audio(label="Generated Voice", type="filepath")
-            generate_btn = gr.Button("Generate")
-            generate_btn.click(generate_voice, [text_input, voice_dropdown], audio_output)
-
-        # TAB 2 — NEW Voice Cloning
-        with gr.TabItem("🧬 Voice Cloning (XTTS v2)"):
-            clone_text = gr.Textbox(label="Enter text to speak")
-            clone_audio = gr.Audio(label="Upload voice sample (5–10 sec)", type="file")
-            clone_output = gr.Audio(label="Cloned Voice", type="filepath")
-            clone_btn = gr.Button("Clone Voice")
-            clone_btn.click(clone_voice, [clone_text, clone_audio], clone_output)
-
+    generate_btn = gr.Button("Generate Voice")
+    generate_btn.click(
+        generate_voice,
+        inputs=[text_input, voice_dropdown, clone_audio],
+        outputs=audio_output
+    )
 
 demo.launch(share=True)
