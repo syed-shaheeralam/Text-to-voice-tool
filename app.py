@@ -4,6 +4,7 @@ from pydub import AudioSegment
 from pydub.effects import normalize
 import os
 import uuid
+import espeakng   # FIX: HuggingFace Clone Voice ERROR Solved
 
 # ---------- Generate voice function ----------
 def generate_voice(text, voice_type, clone_file):
@@ -16,10 +17,10 @@ def generate_voice(text, voice_type, clone_file):
         try:
             from TTS.api import TTS
 
-            # Use CPU for compatibility; set gpu=True if you enable GPU in Spaces
+            # Load Coqui model
             tts = TTS(model_name="tts_models/en/vctk/vits", progress_bar=False, gpu=False)
 
-            # Ensure clone file is WAV
+            # Ensure WAV input
             if not clone_file.lower().endswith(".wav"):
                 temp_wav = f"{uuid.uuid4()}.wav"
                 sound = AudioSegment.from_file(clone_file)
@@ -29,11 +30,10 @@ def generate_voice(text, voice_type, clone_file):
             # Generate cloned voice
             tts.tts_to_file(text=text, speaker_wav=clone_file, file_path=output_path)
 
-            # Ensure file exists before returning
             if os.path.exists(output_path):
                 return output_path
             else:
-                print("Error: cloned audio file not created")
+                print("Error: cloned file not created")
                 return None
 
         except Exception as e:
@@ -69,7 +69,7 @@ def generate_voice(text, voice_type, clone_file):
         sound = sound._spawn(sound.raw_data, overrides={'frame_rate': int(sound.frame_rate * speed)})
         sound = sound.set_frame_rate(44100)
 
-    # Add optional effects
+    # Optional effects
     if voice_type.lower() == "robot":
         sound = sound.overlay(sound - 6)
     elif voice_type.lower() == "sci-fi":
@@ -77,16 +77,17 @@ def generate_voice(text, voice_type, clone_file):
     elif voice_type.lower() in ["cinematic", "cartoon"]:
         sound = sound.fade_in(100).fade_out(100)
 
-    # Normalize volume
+    # Normalize
     sound = normalize(sound)
 
     # Export final audio
     sound.export(output_path, format="mp3")
     return output_path
 
+
 # ---------- Gradio UI ----------
 with gr.Blocks() as demo:
-    gr.Markdown("# 🎤 Professional TTS — Female, Male, Kid, Old, Cinematic, Cartoon, Robot, Sci-Fi + Clone Your Voice")
+    gr.Markdown("# 🎤 Professional TTS — Multiple Voices + Voice Cloning")
 
     text_input = gr.Textbox(label="Enter text")
 
@@ -110,4 +111,4 @@ with gr.Blocks() as demo:
         outputs=audio_output
     )
 
-demo.launch(share=True)
+demo.launch()
