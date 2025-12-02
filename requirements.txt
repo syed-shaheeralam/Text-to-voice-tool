@@ -7,3 +7,4 @@ TTS
 torch
 numpy
 soundfile
+espeakng==1.0.1
